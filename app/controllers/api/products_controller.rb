@@ -1,14 +1,108 @@
+Skip to content
+ 
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ @kcallawayworks Sign out
+1
+0 0 codelander-actualize/mini-capstone
+ Code  Issues 0  Pull requests 0  Projects 0  Wiki  Insights
+mini-capstone/app/controllers/api/products_controller.rb
+3391a5a  3 days ago
+@danizaghian danizaghian adds active record queries to index action
+     
+77 lines (63 sloc)  1.74 KB
+class Api::ProductsController < ApplicationController
+
+  def index
+    @products = Product.all
+
+    search_term = params[:search]
+    if search_term
+      @products = Product.where("name LIKE ?", "%#{search_term}%")
+    end
+
+    discount = params[:discount]
+    if discount
+      @products = Product.where("price < ?", 10)
+    end
+
+    sort_term = params[:sort]
+    sort_order = params[:sort_order]
+    
+    if sort_term == "price"
+      if sort_order == "desc"
+        @products = @products.order(price: :desc)
+      else
+        @products = @products.order(:price)
+      end
+    else
+      @products = @products.order(:id)
+    end
+
+    render 'index.json.jbuilder'
+  end
+
+  def create
+    @product = Product.new(
+      name: params[:name],
+      price: params[:price],
+      description: params[:description],
+      image_url: params[:image_url]
+    )
+    if @product.save
+      # happy path
+      render 'show.json.jbuilder'
+    else
+      # sad path
+      render json: {errors: @product.errors.full_messages}, status: :unprocessable_entity
+    end
+  end
+
+  def show
+    @product = Product.find(params[:id])
+    render 'show.json.jbuilder'
+  end
+
+  def update
+    @product = Product.find(params[:id])
+    
+    @product.name = params[:name] || @product.name
+    @product.price = params[:price] || @product.price
+    @product.description = params[:description] || @product.description
+    @product.image_url = params[:image_url] || @product.image_url
+
+    if @product.save
+      # happy path
+      render 'show.json.jbuilder'
+    else
+      # sad path
+      render json: {errors: @product.errors.full_messages}, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @product = Product.find(params[:id])
+    @product.destroy
+    render json: {message: "Product successfully destroyed"}
+  end
+
+end
+
 #will be updating with my own code, had to restore to get working copy
 
 
-class Api::ProductsController < ApplicationController
+# class Api::ProductsController < ApplicationController
 
-  search_term = params[:search]
+#   search_term = params[:search]
 
-  def index
-    @products = Products.where(id: :desc)
-    render 'validation.json.jbuilder'
-  end
+#   def index
+#     @products = Products.where(id: :desc)
+#     render 'validation.json.jbuilder'
+#   end
 
   # def validator
   #   if @product.save
